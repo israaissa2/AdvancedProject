@@ -1,4 +1,4 @@
-from django.db.models import Model, AutoField, CharField, IntegerField, ForeignKey, CASCADE, DateTimeField, TextField
+from django.db.models import Model, AutoField, CharField, IntegerField, ForeignKey, CASCADE, DateTimeField, TextField, FloatField
 
 from rentitout.models import User
 
@@ -18,3 +18,6 @@ class ItemReservation(Model):
     start_date_time = DateTimeField()
     end_date_time = DateTimeField()
     total_price = IntegerField(default=0)
+    receive_type = CharField(max_length=255, default=None, null=True)
+    lat = FloatField(default=0)
+    lng = FloatField(default=0)
