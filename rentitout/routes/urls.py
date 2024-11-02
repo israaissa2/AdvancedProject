@@ -3,6 +3,7 @@ from rest_framework_nested import routers
 from rentitout.controllers.SignupController import SignupController
 from rentitout.controllers.controller import Controller
 from rentitout.controllers.itemController import ItemController
+from rentitout.controllers.itemRateController import ItemRateController
 from rentitout.controllers.itemReservationController import ItemReservationController
 from rentitout.controllers.loginController import LoginController
 from rentitout.controllers.profileController import ProfileController
@@ -26,6 +27,7 @@ route.register(r'user/reservations', UserReservationController, r'user/reservati
 
 items_route = routers.NestedDefaultRouter(route, 'items', trailing_slash=False, lookup='items')
 items_route.register(r'reservations', ItemReservationController, r'reservations')
+items_route.register(r'ratings', ItemRateController, r'ratings')
 
 
 urlpatterns = route.urls

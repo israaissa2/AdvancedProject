@@ -47,17 +47,24 @@ class ItemReservationRepository:
         return ItemReservation.objects.filter(item_id=item_id).all()
 
     @staticmethod
-    def reserve_item(user_id, item_id, start_time, end_time, total_price):
-        item_reservation = ItemReservation(user_id=user_id, item_id=item_id, start_date_time=start_time, end_date_time=end_time, total_price=total_price)
+    def reserve_item(user_id, item_id, start_time, end_time, total_price, lat, lng, receive_type):
+        item_reservation = ItemReservation(
+            user_id=user_id, item_id=item_id, start_date_time=start_time,
+            end_date_time=end_time, total_price=total_price,
+            lat=lat, lng=lng, receive_type=receive_type
+        )
         item_reservation.save()
         return item_reservation
 
     @staticmethod
-    def update_reservation(user_id, item_id, item_reservation_id, start_time, end_time, total_price):
+    def update_reservation(user_id, item_id, item_reservation_id, start_time, end_time, total_price, lat, lng, receive_type):
         item_reservation = ItemReservation.objects.get(item_id=item_id, user_id=user_id, id=item_reservation_id)
         item_reservation.start_date_time = start_time
         item_reservation.end_date_time = end_time
         item_reservation.total_price = total_price
+        item_reservation.lat = lat
+        item_reservation.lng = lng
+        item_reservation.receive_type = receive_type
         item_reservation.save()
         return item_reservation
 

@@ -23,6 +23,9 @@ class ItemReservationController(ViewSet):
             user_id=request.user.id,
             start_time=request.data['start_date_time'],
             end_time=request.data['end_date_time'],
+            lat=request.data['lat'],
+            lng=request.data['lng'],
+            receive_type=request.data['receive_type']
         )
         return Response(data={'data': ItemReservationSerializer(item_reservation, many=False).data}, status=200)
 
@@ -32,7 +35,10 @@ class ItemReservationController(ViewSet):
             user_id=request.user.id,
             item_reservation_id=int(pk),
             start_time=request.data['start_date_time'],
-            end_time=request.data['end_date_time']
+            end_time=request.data['end_date_time'],
+            lat=request.data['lat'],
+            lng=request.data['lng'],
+            receive_type=request.data['receive_type']
         )
         return Response(data={'data': ItemReservationSerializer(item_reservation, many=False).data}, status=200)
 

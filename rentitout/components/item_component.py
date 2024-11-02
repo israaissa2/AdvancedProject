@@ -37,7 +37,7 @@ class ItemReservationComponent:
         return ItemReservationRepository.get_reservations(item_id)
 
     @staticmethod
-    def add_reservation(item_id, user_id, start_time, end_time):
+    def add_reservation(item_id, user_id, start_time, end_time, lat, lng, receive_type):
         item = ItemRepository.get_item_by_id(item_id)
         if IntervalIntersectionComponent.check_reservation_intersection(
             start_date_time=start_time, end_date_time=end_time,
@@ -47,6 +47,7 @@ class ItemReservationComponent:
         if item:
             return ItemReservationRepository.reserve_item(
                 item_id=item_id, user_id=user_id, start_time=start_time, end_time=end_time,
+                lat=lat, lng=lng, receive_type=receive_type,
                 total_price=PriceCalculatorComponent.calculate_total_price(
                     start_date_time=start_time, end_date_time=end_time, price_per_hour=item.price
                 )
@@ -55,7 +56,7 @@ class ItemReservationComponent:
             raise ItemDoesNotExist()
 
     @staticmethod
-    def update_reservation(item_reservation_id, item_id, user_id, start_time, end_time):
+    def update_reservation(item_reservation_id, item_id, user_id, start_time, end_time, lat, lng, receive_type):
         item = ItemRepository.get_item_by_id(item_id)
         if IntervalIntersectionComponent.check_reservation_intersection(
             start_date_time=start_time, end_date_time=end_time,
@@ -66,6 +67,7 @@ class ItemReservationComponent:
         if item:
             return ItemReservationRepository.update_reservation(
                 item_id=item_id, user_id=user_id, start_time=start_time, end_time=end_time,
+                lat=lat, lng=lng, receive_type=receive_type,
                 item_reservation_id=item_reservation_id, total_price=PriceCalculatorComponent.calculate_total_price(
                     start_date_time=start_time, end_date_time=end_time, price_per_hour=item.price
                 )
