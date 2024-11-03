@@ -1,0 +1,1027 @@
+openapi: '3.0.0'
+info:
+  title: User Authentication, Items, Reservations, Ratings, and Currency API
+  version: '1.0.0'
+  description: >
+    API documentation for user signup, login, profile retrieval, items, reservations, ratings, and currency exchange functionalities.
+servers:
+  - url: 'http://127.0.0.1:8000'
+paths:
+  /signup:
+    post:
+      summary: Create a new user account
+      description: Registers a new user with the provided information.
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - first_name
+                - last_name
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  uniqueItems: true
+                  description: Unique email address of the user.
+                  example: test@test.com
+                first_name:
+                  type: string
+                  description: First name of the user.
+                  example: Test
+                last_name:
+                  type: string
+                  description: Last name of the user.
+                  example: Test
+                password:
+                  type: string
+                  format: password
+                  description: Password for the user account.
+                  example: Test123
+      responses:
+        '200':
+          description: User successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: Unique identifier for the user.
+                    example: 4
+                  username:
+                    type: string
+                    description: Username of the user.
+                    example: test@test2.com
+                  email:
+                    type: string
+                    format: email
+                    description: Email address of the user.
+                    example: test@test2.com
+                  first_name:
+                    type: string
+                    description: First name of the user.
+                    example: Test
+                  last_name:
+                    type: string
+                    description: Last name of the user.
+                    example: Test
+                  is_active:
+                    type: boolean
+                    description: Indicates if the user account is active.
+                    example: true
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /login:
+    post:
+      summary: Authenticate a user and return an access token
+      description: Logs in a user with the provided email and password.
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Registered email address of the user.
+                  example: test@test.com
+                password:
+                  type: string
+                  format: password
+                  description: Password for the user account.
+                  example: Test123
+      responses:
+        '200':
+          description: Successful authentication
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: JWT access token for authenticated requests.
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized - Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /me:
+    get:
+      summary: Retrieve user profile information
+      description: Returns the profile information of the currently authenticated user.
+      operationId: getUserProfile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful retrieval of user profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserProfile'
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /items:
+    get:
+      summary: Retrieve all items excluding the user's own items
+      description: Returns a list of items that do not belong to the currently authenticated user.
+      operationId: getItems
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful retrieval of items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Item'
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new item
+      description: Adds a new item to the system.
+      operationId: createItem
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemCreate'
+      responses:
+        '201':
+          description: Item successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /items/{id}:
+    put:
+      summary: Update an existing item
+      description: Updates an existing item identified by its ID.
+      operationId: updateItem
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the item to update
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemUpdate'
+      responses:
+        '200':
+          description: Item successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete an existing item
+      description: Deletes an existing item identified by its ID.
+      operationId: deleteItem
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the item to delete
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Item successfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Confirmation message.
+                    example: "Item with ID 1 has been deleted."
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /user/items:
+    get:
+      summary: Retrieve the current user's published items
+      description: Returns a list of items published by the currently authenticated user.
+      operationId: getUserItems
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful retrieval of user's items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserItem'
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /items/{item_id}/reservations:
+    get:
+      summary: Retrieve reservations for an item
+      description: Returns a list of reservations for the specified item.
+      operationId: getReservations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          description: ID of the item
+          schema:
+            type: integer
+            example: 6
+      responses:
+        '200':
+          description: Successful retrieval of reservations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Reservation'
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new reservation for an item
+      description: Creates a new reservation for the specified item.
+      operationId: createReservation
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          description: ID of the item to reserve
+          schema:
+            type: integer
+            example: 6
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationCreate'
+      responses:
+        '201':
+          description: Reservation successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /items/{item_id}/reservations/{reservation_id}:
+    put:
+      summary: Update an existing reservation
+      description: Updates an existing reservation identified by its ID for the specified item.
+      operationId: updateReservation
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          description: ID of the item
+          schema:
+            type: integer
+            example: 6
+        - name: reservation_id
+          in: path
+          required: true
+          description: ID of the reservation to update
+          schema:
+            type: integer
+            example: 5
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReservationCreate'
+      responses:
+        '200':
+          description: Reservation successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Reservation'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Reservation or Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete an existing reservation
+      description: Deletes an existing reservation identified by its ID for the specified item.
+      operationId: deleteReservation
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          description: ID of the item
+          schema:
+            type: integer
+            example: 6
+        - name: reservation_id
+          in: path
+          required: true
+          description: ID of the reservation to delete
+          schema:
+            type: integer
+            example: 5
+      responses:
+        '200':
+          description: Reservation successfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Confirmation message.
+                    example: "Deleted Successfully"
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Reservation or Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /items/{item_id}/ratings:
+    get:
+      summary: Retrieve ratings for an item
+      description: Returns a list of ratings for the specified item.
+      operationId: getRatings
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          description: ID of the item
+          schema:
+            type: integer
+            example: 6
+      responses:
+        '200':
+          description: Successful retrieval of ratings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Rating'
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new rating for an item
+      description: Creates a new rating for the specified item.
+      operationId: createRating
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          description: ID of the item to rate
+          schema:
+            type: integer
+            example: 6
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RatingCreate'
+      responses:
+        '201':
+          description: Rating successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Rating'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /items/{item_id}/ratings/{rating_id}:
+    put:
+      summary: Update an existing rating
+      description: Updates an existing rating identified by its ID for the specified item.
+      operationId: updateRating
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          description: ID of the item
+          schema:
+            type: integer
+            example: 6
+        - name: rating_id
+          in: path
+          required: true
+          description: ID of the rating to update
+          schema:
+            type: integer
+            example: 3
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RatingCreate'
+      responses:
+        '200':
+          description: Rating successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Rating'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Rating or Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete an existing rating
+      description: Deletes an existing rating identified by its ID for the specified item.
+      operationId: deleteRating
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          description: ID of the item
+          schema:
+            type: integer
+            example: 6
+        - name: rating_id
+          in: path
+          required: true
+          description: ID of the rating to delete
+          schema:
+            type: integer
+            example: 3
+      responses:
+        '200':
+          description: Rating successfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    description: Confirmation message.
+                    example: "Deleted Successfully"
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Rating or Item not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /user/reservations:
+    get:
+      summary: Retrieve the user's reservations
+      description: Returns the reservations made by the authenticated user.
+      operationId: getUserReservations
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful retrieval of user's reservations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Reservation'
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /currencies:
+    get:
+      summary: Retrieve currency exchange rates
+      description: Returns the latest currency exchange rates.
+      operationId: getCurrencies
+      responses:
+        '200':
+          description: Successful retrieval of currency exchange rates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/CurrencyResponse'
+        '422':
+          description: Service is not Available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the user.
+          example: 3
+        username:
+          type: string
+          description: Username of the user.
+          example: "test@test.com"
+        email:
+          type: string
+          format: email
+          description: Email address of the user.
+          example: "test@test.com"
+        first_name:
+          type: string
+          description: First name of the user.
+          example: "Test"
+        last_name:
+          type: string
+          description: Last name of the user.
+          example: "Test"
+        is_active:
+          type: boolean
+          description: Indicates if the user account is active.
+          example: true
+        role:
+          type: integer
+          description: Role identifier of the user.
+          example: 1
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the user.
+          example: 3
+        first_name:
+          type: string
+          description: First name of the user.
+          example: "Test"
+        last_name:
+          type: string
+          description: Last name of the user.
+          example: "Test"
+        email:
+          type: string
+          format: email
+          description: Email address of the user.
+          example: "test@test.com"
+        username:
+          type: string
+          description: Username of the user.
+          example: "test@test.com"
+        role:
+          type: string
+          description: Role of the user.
+          example: "CLIENT"
+    Item:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the item.
+          example: 6
+        name:
+          type: string
+          description: Name of the item.
+          example: "My Item4443"
+        description:
+          type: string
+          description: Description of the item.
+          example: "Works like a charm"
+        price:
+          type: number
+          format: float
+          description: Price of the item.
+          example: 20.0
+        owner:
+          $ref: '#/components/schemas/User'
+    ItemCreate:
+      type: object
+      required:
+        - name
+        - description
+        - price
+      properties:
+        name:
+          type: string
+          description: Name of the item.
+          example: "My Item2"
+        description:
+          type: string
+          description: Description of the item.
+          example: "Works like a charm"
+        price:
+          type: number
+          format: float
+          description: Price of the item.
+          example: 10.0
+    ItemUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the item.
+          example: "My Item4443"
+        description:
+          type: string
+          description: Description of the item.
+          example: "Works like a charm"
+        price:
+          type: number
+          format: float
+          description: Price of the item.
+          example: 20.0
+    UserItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the item.
+          example: 6
+        name:
+          type: string
+          description: Name of the item.
+          example: "My Item4443"
+        description:
+          type: string
+          description: Description of the item.
+          example: "Works like a charm"
+        price:
+          type: number
+          format: float
+          description: Price of the item.
+          example: 20.0
+    Reservation:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the reservation.
+          example: 5
+        item:
+          $ref: '#/components/schemas/Item'
+        start_date_time:
+          type: string
+          format: date-time
+          description: Start date and time of the reservation.
+          example: "2024-11-02T15:00:00Z"
+        end_date_time:
+          type: string
+          format: date-time
+          description: End date and time of the reservation.
+          example: "2024-11-02T18:00:00Z"
+        total_price:
+          type: number
+          format: float
+          description: Total price of the reservation.
+          example: 78.0
+        user:
+          $ref: '#/components/schemas/User'
+    ReservationCreate:
+      type: object
+      required:
+        - start_date_time
+        - end_date_time
+        - lat
+        - lng
+        - receive_type
+      properties:
+        start_date_time:
+          type: string
+          format: date-time
+          description: Start date and time of the reservation.
+          example: "2024-11-02T15:00:00"
+        end_date_time:
+          type: string
+          format: date-time
+          description: End date and time of the reservation.
+          example: "2024-11-02T18:00:00"
+        lat:
+          type: number
+          format: float
+          description: Latitude for the delivery location.
+          example: 11265225.0
+        lng:
+          type: number
+          format: float
+          description: Longitude for the delivery location.
+          example: 23522326.0
+        receive_type:
+          type: string
+          enum: [DELIVERY, PICKUP]
+          description: Method of receiving the item.
+          example: "DELIVERY"
+    Rating:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the rating.
+          example: 3
+        description:
+          type: string
+          description: Description of the rating.
+          example: "Good item"
+        value:
+          type: integer
+          description: Rating value (min 0, max 5).
+          minimum: 0
+          maximum: 5
+          example: 0
+    RatingCreate:
+      type: object
+      required:
+        - value
+        - description
+      properties:
+        value:
+          type: integer
+          description: Rating value (min 0, max 5).
+          minimum: 0
+          maximum: 5
+          example: 5
+        description:
+          type: string
+          description: Description of the rating.
+          example: "Good item"
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message detailing what went wrong.
+          example: "Resource not found."
+    CurrencyResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Indicates if the request was successful.
+          example: true
+        timestamp:
+          type: integer
+          description: Time at which the rates were collected, in Unix timestamp.
+          example: 1730564582
+        base:
+          type: string
+          description: The base currency for the rates.
+          example: "EUR"
+        date:
+          type: string
+          format: date
+          description: The date for which the rates are applicable.
+          example: "2024-11-02"
+        rates:
+          type: object
+          description: A map of currency codes to their exchange rates.
+          additionalProperties:
+            type: number
+            format: float
+          example:
+            AED: 3.996561
+            AFN: 72.725294
+            ALL: 98.323637
+            # ... other currency rates ...
