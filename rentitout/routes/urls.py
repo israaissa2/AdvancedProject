@@ -1,6 +1,7 @@
 from rest_framework_nested import routers
 
 from rentitout.controllers.SignupController import SignupController
+from rentitout.controllers.adminReportController import ReportController
 from rentitout.controllers.controller import Controller
 from rentitout.controllers.currencyController import CurrencyController
 from rentitout.controllers.currencyConvertController import CurrencyConvertController
@@ -9,6 +10,7 @@ from rentitout.controllers.itemRateController import ItemRateController
 from rentitout.controllers.itemReservationController import ItemReservationController
 from rentitout.controllers.loginController import LoginController
 from rentitout.controllers.profileController import ProfileController
+from rentitout.controllers.reportController import UserReportController
 from rentitout.controllers.userItemsController import UserItemController
 from rentitout.controllers.userReservationsController import UserReservationController
 
@@ -18,6 +20,10 @@ route.register(r'checker', Controller, r'checker')
 route.register(r'signup', SignupController, r'signup')
 
 route.register(r'login', LoginController, r'login')
+
+route.register(r'admin/reports', ReportController, r'admin/reports')
+
+route.register(r'reports', UserReportController, r'reports')
 
 route.register(r'me', ProfileController, r'me')
 

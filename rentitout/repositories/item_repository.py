@@ -37,6 +37,9 @@ class ItemRepository:
 
 
 class ItemReservationRepository:
+    @staticmethod
+    def get_reservation_by_id(reservation_id):
+        return ItemReservation.objects.filter(pk=reservation_id).first()
 
     @staticmethod
     def get_user_reservations(user_id):

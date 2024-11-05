@@ -13,6 +13,12 @@ class ItemDoesNotExist(APIException):
     default_code = 'ITEM_DOES_NOT_EXIST'
 
 
+class InvalidReservation(APIException):
+    status_code = 400
+    default_detail = 'Invalid Reservation.'
+    default_code = 'INVALID_RESERVATION'
+
+
 class CurrencyServiceInvalid(APIException):
     status_code = 422
     default_detail = 'Currency Service is Out of Service.'
