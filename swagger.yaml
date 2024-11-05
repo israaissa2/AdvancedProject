@@ -1,9 +1,9 @@
 openapi: '3.0.0'
 info:
-  title: User Authentication, Items, Reservations, Ratings, and Currency API
+  title: User Authentication, Items, Reservations, Ratings, and Reports API
   version: '1.0.0'
   description: >
-    API documentation for user signup, login, profile retrieval, items, reservations, ratings, and currency exchange functionalities.
+    API documentation for user signup, login, profile retrieval, items, reservations, ratings, currency exchange, and reporting functionalities.
 servers:
   - url: 'http://127.0.0.1:8000'
 paths:
@@ -737,14 +737,138 @@ paths:
                 properties:
                   data:
                     $ref: '#/components/schemas/CurrencyResponse'
-        '422':
-          description: Service is not Available
+        '500':
+          description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal server error
+  /reports:
+    post:
+      summary: Create a new report
+      description: Submits a new report about an item being damaged or broken.
+      operationId: createReport
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportCreate'
+      responses:
+        '201':
+          description: Report successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  report:
+                    $ref: '#/components/schemas/Report'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /admin/reports:
+    get:
+      summary: Retrieve reports
+      description: Allows admin users to retrieve reports based on status.
+      operationId: getReports
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: Status of the reports to filter by.
+          schema:
+            type: string
+            enum: [PENDING, IN PROGRESS, RESOLVED]
+            example: "PENDING"
+      responses:
+        '200':
+          description: Successful retrieval of reports
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reports:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Report'
+        '401':
+          description: Unauthorized - Missing or invalid token or insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - User is not an admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /admin/reports/{report_id}:
+    put:
+      summary: Update a report's status
+      description: Allows admin users to update the status of a report.
+      operationId: updateReport
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: report_id
+          in: path
+          required: true
+          description: ID of the report to update
+          schema:
+            type: integer
+            example: 2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportUpdate'
+      responses:
+        '200':
+          description: Report successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  report:
+                    $ref: '#/components/schemas/Report'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Missing or invalid token or insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - User is not an admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Report not found
           content:
             application/json:
               schema:
@@ -1025,3 +1149,45 @@ components:
             AFN: 72.725294
             ALL: 98.323637
             # ... other currency rates ...
+    Report:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the report.
+          example: 2
+        description:
+          type: string
+          description: Description of the report.
+          example: "Item was broken"
+        reservation:
+          $ref: '#/components/schemas/Reservation'
+        status:
+          type: string
+          description: Status of the report.
+          enum: [PENDING, IN PROGRESS, RESOLVED]
+          example: "PENDING"
+    ReportCreate:
+      type: object
+      required:
+        - reservation_id
+        - description
+      properties:
+        reservation_id:
+          type: integer
+          description: ID of the reservation associated with the report.
+          example: 6
+        description:
+          type: string
+          description: Description of the issue.
+          example: "Item was broken"
+    ReportUpdate:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          description: New status of the report.
+          enum: [PENDING, IN PROGRESS, RESOLVED]
+          example: "IN PROGRESS"

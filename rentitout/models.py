@@ -5,7 +5,7 @@ from django.db import models
 class User(AbstractUser):
 
     role = models.PositiveSmallIntegerField(choices=[
-        (1, "USER"), (2, "TEACHER"), (3, "TRAINER"), (4, "ADMIN")
+        (1, "USER"), (2, "ADMIN")
     ], default=1)
 
     def save(self, *args, **kwargs):
